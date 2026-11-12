@@ -4,6 +4,7 @@ import { RosterPanel } from "../features/roster";
 import { ActionPanel } from "../features/tactics";
 import { TurnOrder } from "../features/initiative";
 import { ReplayPanel, downloadArchive } from "../features/replay";
+import { AudioPanel } from "../features/audio";
 import { key } from "../shared/document";
 import { useWorkspace } from "./workspace";
 const {
@@ -19,9 +20,13 @@ const {
   routes,
   targets,
   path,
+  focus,
+  audioEvent,
   playback,
+  audio,
   cell,
   wait,
+  scrub,
   seek,
   reset,
 } = useWorkspace();
@@ -36,6 +41,20 @@ const {
       <nav>
         <span class="nav-active">战术指挥台</span><span>本地演练 / 07</span>
       </nav>
+      <button
+        class="sound-toggle"
+        @click="
+          audio.started.value ? audio.mute() : audio.enable()
+        "
+      >
+        {{
+          !audio.started.value
+            ? "♪ 启动音效"
+            : audio.volume.value > 0
+              ? "♪ 音效开启"
+              : "♪ 已静音"
+        }}
+      </button>
       <button @click="reset">↻ 重新部署</button>
     </header>
     <div class="mission">
@@ -73,6 +92,7 @@ const {
           :routes="[...routes.keys()]"
           :targets="targets.map(key)"
           :path="path"
+          :focus="focus"
           @cell="cell"
         />
         <div class="field-note">
@@ -98,10 +118,20 @@ const {
           :events="session.events"
           :cursor="cursor"
           :playing="playback.playing.value"
+          :can-play="audio.started.value"
           @seek="seek"
+          @scrub="scrub"
           @play="playback.play(cursor)"
           @stop="playback.stop"
           @download="downloadArchive(session)"
+        /><AudioPanel
+          :event="audioEvent"
+          :cursor="cursor"
+          :blocked="audio.contextBlocked.value"
+          @enable="audio.enable()"
+          @audition-step="audioEvent && audio.auditionStep(audioEvent)"
+          @volume="audio.setVolume"
+          @offset="audio.setOffset"
         />
       </aside>
     </div>

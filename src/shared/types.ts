@@ -35,12 +35,29 @@ export interface Battle {
   ended: string | null;
 }
 export type EventKind = "move" | "skill" | "wait" | "terrain";
+/** Structured outcome captured at record time so audio never has to guess. */
+export interface EventMeta {
+  skillId?: string;
+  skillName?: string;
+  targetId?: string;
+  targetName?: string;
+  value?: number;
+  status?: Status["kind"];
+  elevated?: boolean;
+  armor?: number;
+  terrain?: Terrain;
+}
 export interface BattleEvent {
   id: number;
   kind: EventKind;
   actor: string;
   label: string;
   path: Point[];
+  /** Where the action actually landed; drives map marker and stereo pan. */
+  focus?: Point | null;
+  /** Milliseconds since the session started, used by the replay scheduler. */
+  at?: number;
+  meta?: EventMeta;
   before: Battle;
   after: Battle;
 }
@@ -48,6 +65,8 @@ export interface Session {
   initial: Battle;
   live: Battle;
   events: BattleEvent[];
+  /** Monotonic wall clock origin for event timestamps. */
+  startedAt?: number;
 }
 export interface Skill {
   id: string;

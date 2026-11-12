@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import type { BattleEvent } from "../../../shared/types";
-defineProps<{ events: BattleEvent[]; cursor: number; playing: boolean }>();
-defineEmits<{ seek: [cursor: number]; play: []; stop: []; download: [] }>();
+defineProps<{
+  events: BattleEvent[];
+  cursor: number;
+  playing: boolean;
+  canPlay: boolean;
+}>();
+defineEmits<{
+  seek: [cursor: number];
+  scrub: [cursor: number];
+  play: [];
+  stop: [];
+  download: [];
+}>();
 </script>
 <template>
   <section class="panel replay-panel">
@@ -10,7 +21,11 @@ defineEmits<{ seek: [cursor: number]; play: []; stop: []; download: [] }>();
       战斗回放 <small>{{ events.length }} 步记录</small>
     </h3>
     <div class="replay-tools">
-      <button @click="playing ? $emit('stop') : $emit('play')">
+      <button
+        :disabled="!events.length"
+        :title="canPlay ? '' : '点击播放会同时启动音频'"
+        @click="playing ? $emit('stop') : $emit('play')"
+      >
         {{ playing ? "Ⅱ 暂停" : "▶ 播放" }}</button
       ><button @click="$emit('seek', -1)">返回实战</button
       ><button @click="$emit('download')">导出记录 ↓</button>
@@ -18,10 +33,12 @@ defineEmits<{ seek: [cursor: number]; play: []; stop: []; download: [] }>();
     <input
       aria-label="回放进度"
       type="range"
+      class="replay-range"
       min="0"
       :max="events.length"
       :value="cursor < 0 ? events.length : cursor"
-      @input="$emit('seek', Number(($event.target as HTMLInputElement).value))"
+      @input="$emit('scrub', Number(($event.target as HTMLInputElement).value))"
+      @change="$emit('seek', Number(($event.target as HTMLInputElement).value))"
     />
     <div class="event-list">
       <button :class="{ chosen: cursor === 0 }" @click="$emit('seek', 0)">

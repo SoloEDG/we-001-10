@@ -8,6 +8,7 @@ defineProps<{
   routes: string[];
   targets: string[];
   path: Point[];
+  focus?: Point | null;
 }>();
 defineEmits<{ cell: [point: Point] }>();
 </script>
@@ -28,6 +29,7 @@ defineEmits<{ cell: [point: Point] }>();
             reachable: routes.includes(key(tile)),
             target: targets.includes(key(tile)),
             trail: path.some((p) => key(p) === key(tile)),
+            focused: !!focus && key(focus) === key(tile),
           },
         ]"
         :aria-label="`${tile.x},${tile.y} ${terrainRules[tile.terrain].name}`"
@@ -64,7 +66,10 @@ defineEmits<{ cell: [point: Point] }>();
       </button>
     </div>
     <div class="map-caption">
-      <span>浅滩纵贯南北 · 中央石桥可快速渡河</span
+      <span v-if="focus" class="map-focus"
+        >◆ 事件定位 {{ focus.x + 1 }},{{ focus.y + 1 }} ·
+        音效声像跟随此格</span
+      ><span v-else>浅滩纵贯南北 · 中央石桥可快速渡河</span
       ><span>◇ 当前行动　● 可移动　◈ 技能目标</span>
     </div>
   </section>
